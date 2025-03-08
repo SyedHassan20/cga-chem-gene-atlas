@@ -1,0 +1,257 @@
+```{r}
+# --- Loading Packages ---
+library(readr) 
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+
+```
+
+```{r}
+# --- Loading Files ---
+intolerome_path <- "/Users/hassan/Desktop/UCSF Lab Work/CGA App/data/Intolerome.tsv"
+ctd_path <- "/Users/hassan/Desktop/UCSF Lab Work/CGA App/data/CTD_chem_gene_ixns.tsv"
+
+intolerome <- read.delim(intolerome_path, sep = "\t")
+ctd <- read.delim(ctd_path, skip = 27, sep = "\t")
+
+```
+
+```{r}
+#Process the datasets
+
+intolerome <- intolerome %>%
+  separate('Gene.Locus', into = c("Gene_Name", "Gene_ID"), sep = "; id:") %>%
+  mutate(
+    Gene_Name = str_replace(Gene_Name, "name: ", ""),
+    Gene_ID = str_replace(Gene_ID, ";", ""),
+    Gene_ID = as.numeric(Gene_ID),
+    System.Affected = str_to_sentence(System.Affected)  # Capitalizes first letter, makes rest lowercase
+  )
+
+# Clean the InteractionActions column in ctd
+ctd <- ctd %>%
+  mutate(InteractionActions = str_replace_all(InteractionActions, "\\^", " "),  # Replace ^ with space
+         InteractionActions = str_replace_all(InteractionActions, "\\|", "; ")) # Replace | with ;
+```
+
+```{r}
+# --- Merge Files ---
+merged_df <- left_join(intolerome, ctd, by = c("Gene_ID" = "GeneID"), relationship = "many-to-many") %>%
+  mutate(
+    InteractionActions = str_replace_all(InteractionActions, "\\^", " "),
+    InteractionActions = str_replace_all(InteractionActions, "\\|", "; ")
+  ) %>%
+  filter(Organism == "Homo sapiens")
+```
+
+```{r}
+# --- Intolerome Analysis ---
+head(intolerome)
+
+# Print initial statistics
+cat("Initial GeneData Statistics:\n")
+cat("Total genes:", n_distinct(intolerome$Gene_Name), "\n")
+cat("Total genes:", n_distinct(intolerome$Gene_Name), "\n")
+
+
+
+```
+```{r}
+# --- Distributions in Intolerome ---
+# Function to create a bar plot with customizable fill and color
+plot_distribution <- function(data, column_name, title, fill_color = "steelblue", border_color = "black") {
+  formatted_column_name <- str_replace_all(column_name, "[._]", " ")  # Format column name for axis
+  
+  distribution <- data %>%
+    count(!!sym(column_name), name = "Count") %>%
+    arrange(desc(Count))
+  
+  ggplot(distribution, aes(x = reorder(!!sym(column_name), -Count), y = Count)) +
+    geom_bar(stat = "identity", fill = fill_color, color = border_color) +  # Use user-defined colors
+    geom_text(aes(label = Count), vjust = -0.3, size = 4) +  # Annotate with counts
+    labs(title = title,
+         x = formatted_column_name,  # Use formatted column name with spaces
+         y = "Frequency") +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels for readability
+      plot.title = element_text(hjust = 0.5, face = "bold")  # Center and bold title
+    )
+}
+
+# Plot distributions for Gene Effect, System Affected, Lethality Mode of Function
+p1 <- plot_distribution(intolerome, "Gene.Effect", "Distribution of Gene Effect")
+p2 <- plot_distribution(intolerome, "System.Affected", "Distribution of System Affected")
+p3 <- plot_distribution(intolerome, "Lethality.Mode.of.Function", "Distribution of Lethality Mode of Function")
+
+# Merge the Lethality Timing columns and properly rename them
+lethality_timing_long <- intolerome %>%
+  rename(
+    "Trimester 1st" = X1st,
+    "Trimester 2nd" = X2nd,
+    "Trimester 3rd" = X3rd,
+    "Post natal" = Postnatal
+  ) %>%
+  select("Trimester 1st", "Trimester 2nd", "Trimester 3rd", "Post natal") %>%
+  pivot_longer(cols = everything(), names_to = "Lethality_Timing", values_to = "Presence") %>%
+  filter(!is.na(Presence)) %>%  # Remove empty values if any
+  count(Lethality_Timing, name = "Count")
+
+# Plot Lethality Timing distribution
+p4 <- ggplot(lethality_timing_long, aes(x = reorder(Lethality_Timing, -Count), y = Count)) +
+  geom_bar(stat = "identity", fill = "steelblue", color = "black") +
+  geom_text(aes(label = Count), vjust = -0.3, size = 4) +
+  labs(title = "Distribution of Lethality Timing",
+       x = "Lethality Timing",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(hjust = 0.5, face = "bold")  # Center and bold title
+  )
+
+# Print the plots
+print(p1)
+print(p2)
+print(p3)
+print(p4)
+
+
+
+```
+
+```{r}
+# --- CTD Analysis ---
+head(ctd)
+
+cat("\nInitial CTD Dataset Statistics:\n")
+cat("Total interactions:", nrow(ctd), "\n")
+cat("Total unique chemicals:", n_distinct(ctd$X..ChemicalName), "\n")
+cat("Total unique genes in CTD:", n_distinct(ctd$GeneID), "\n\n")
+
+ctd_filtered <- ctd %>%
+  filter(Organism == "Homo sapiens") 
+
+# Print initial statistics after filtering for Organism == Homo sapeiens
+cat("\nInitial CTD Dataset Statistics For Homo Sapiens:\n")
+cat("Total interactions:", nrow(ctd_filtered), "\n")
+cat("Total unique chemicals:", n_distinct(ctd_filtered$X..ChemicalName), "\n")
+cat("Total unique genes in CTD:", n_distinct(ctd_filtered$GeneID), "\n\n")
+```
+
+
+```{r}
+# --- Merged Dataset Analysis ---
+
+# --- Initial Dataset Statistics ---
+cat("\nInitial Merged Dataset Statistics (Homo sapiens):\n")
+cat("Total interactions:", nrow(merged_df), "\n")
+cat("Total unique chemicals:", n_distinct(merged_df$X..ChemicalName), "\n")
+cat("Total unique genes:", n_distinct(merged_df$Gene_ID), "\n\n")
+
+# --- Distributions ---
+p1 <- plot_distribution(merged_df, "Gene.Effect", "Distribution of Gene Effect", fill_color = "lavender", border_color = "black")
+p2 <- plot_distribution(merged_df, "System.Affected", "Distribution of System Affected", fill_color = "lightcoral", border_color = "black")
+p3 <- plot_distribution(merged_df, "Lethality.Mode.of.Function", "Distribution of Lethality Mode of Function", fill_color = "lightseagreen", border_color = "black")
+
+# --- Lethality Timing Distribution ---
+lethality_timing_long <- merged_df %>%
+  rename(
+    "Trimester 1st" = X1st,
+    "Trimester 2nd" = X2nd,
+    "Trimester 3rd" = X3rd,
+    "Post natal" = Postnatal
+  ) %>%
+  select("Trimester 1st", "Trimester 2nd", "Trimester 3rd", "Post natal") %>%
+  pivot_longer(cols = everything(), names_to = "Lethality_Timing", values_to = "Presence") %>%
+  filter(!is.na(Presence)) %>%  # Remove empty values
+  count(Lethality_Timing, name = "Count")
+
+p4 <- ggplot(lethality_timing_long, aes(x = reorder(Lethality_Timing, -Count), y = Count)) +
+  geom_bar(stat = "identity", fill = "lightblue", color = "black") +
+  geom_text(aes(label = Count), vjust = -0.3, size = 4) +
+  labs(title = "Distribution of Lethality Timing",
+       x = "Lethality Timing",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(hjust = 0.5, face = "bold")  # Center and bold title
+  )
+
+# --- Print the Plots ---
+print(p1)
+print(p2)
+print(p3)
+print(p4)
+```
+```{r}
+# --- Function to Create Bar Plot Distributions for Unique Genes ---
+plot_distribution_unique_genes <- function(data, column_name, title, fill_color = "steelblue", border_color = "black") {
+  formatted_column_name <- str_replace_all(column_name, "[._]", " ")  # Format column name for axis
+  
+  distribution <- data %>%
+    distinct(Gene_ID, !!sym(column_name)) %>%  # Keep only unique Gene_ID per category
+    count(!!sym(column_name), name = "Count") %>%
+    arrange(desc(Count))
+  
+  ggplot(distribution, aes(x = reorder(!!sym(column_name), -Count), y = Count)) +
+    geom_bar(stat = "identity", fill = fill_color, color = border_color) +  # Use user-defined colors
+    geom_text(aes(label = Count), vjust = -0.3, size = 4) +  # Annotate with counts
+    labs(title = title,
+         x = formatted_column_name,  # Use formatted column name with spaces
+         y = "Unique Gene Count") +  # Updated y-label to reflect unique genes
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels for readability
+      plot.title = element_text(hjust = 0.5, face = "bold")  # Center and bold title
+    )
+}
+
+# --- Initial Dataset Statistics ---
+cat("\nInitial Merged Dataset Statistics (Homo sapiens):\n")
+cat("Total interactions:", nrow(merged_df), "\n")
+cat("Total unique chemicals:", n_distinct(merged_df$X..ChemicalName), "\n")
+cat("Total unique genes:", n_distinct(merged_df$Gene_ID), "\n\n")
+
+# --- Unique Gene Distributions ---
+p1 <- plot_distribution_unique_genes(merged_df, "Gene.Effect", "Distribution of Gene Effect (Unique Genes)", fill_color = "lavender", border_color = "black")
+p2 <- plot_distribution_unique_genes(merged_df, "System.Affected", "Distribution of System Affected (Unique Genes)", fill_color = "lightcoral", border_color = "black")
+p3 <- plot_distribution_unique_genes(merged_df, "Lethality.Mode.of.Function", "Distribution of Lethality Mode of Function (Unique Genes)", fill_color = "lightseagreen", border_color = "black")
+
+# --- Lethality Timing Distribution (Based on Unique Genes) ---
+lethality_timing_long <- merged_df %>%
+  rename(
+    "Trimester 1st" = X1st,
+    "Trimester 2nd" = X2nd,
+    "Trimester 3rd" = X3rd,
+    "Post natal" = Postnatal
+  ) %>%
+  select(Gene_ID, "Trimester 1st", "Trimester 2nd", "Trimester 3rd", "Post natal") %>%  # Keep Gene_ID to ensure uniqueness
+  pivot_longer(cols = -Gene_ID, names_to = "Lethality_Timing", values_to = "Presence") %>%
+  filter(!is.na(Presence)) %>%  # Remove empty values
+  distinct(Gene_ID, Lethality_Timing) %>%  # Ensure each gene is counted once per category
+  count(Lethality_Timing, name = "Count")
+
+p4 <- ggplot(lethality_timing_long, aes(x = reorder(Lethality_Timing, -Count), y = Count)) +
+  geom_bar(stat = "identity", fill = "lightblue", color = "black") +
+  geom_text(aes(label = Count), vjust = -0.3, size = 4) +
+  labs(title = "Distribution of Lethality Timing (Unique Genes)",
+       x = "Lethality Timing",
+       y = "Unique Gene Count") +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(hjust = 0.5, face = "bold")  # Center and bold title
+  )
+
+# --- Print the Plots ---
+print(p1)
+print(p2)
+print(p3)
+print(p4)
+
+```
+
