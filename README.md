@@ -5,7 +5,7 @@ The **Chemical-Gene Atlas (CGA)** is an interactive Shiny web application for ex
 
 ---
 
-## 🌟 Features
+## Features
 
 - **Interactive Donut Charts** for:
   - Gene Effect
@@ -19,10 +19,31 @@ The **Chemical-Gene Atlas (CGA)** is an interactive Shiny web application for ex
 
 ---
 
-## 📊 Data Input
+## Data Input
 
 The app requires a merged dataset in RDS format:
 
 ```bash
 data/merged_data.rds
+
+
+### Expected Columns
+- **Genes**: `Gene_Name`, `Gene ID`, `OMIM Gene`, `Gene Effect`, `Variants`
+- **Lethality & Phenotypes**: `Lethality.Mode.of.Function`, `1st`, `2nd`, `3rd`, `Postnatal`, `System.Affected`, `Disease`
+- **Chemicals**: `X..ChemicalName`, `Chemical ID`, `Interaction`, `Interaction Actions`
+- **Evidence**: `CTD PubMed IDs`, `Intolerome PubMed IDs`
+
+---
+## Install R dependencies
+
+```bash
+install.packages(c(
+  "shiny", "dplyr", "tidyr", "stringr", "plotly",
+  "visNetwork", "DT", "memoise", "shinycssloaders",
+  "RColorBrewer", "viridis", "future", "promises"
+))
+---
+
+## Install R dependencies
+- Place your merged_data.rds file into the data/ directory.
 
