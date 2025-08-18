@@ -25,7 +25,7 @@ The app requires a merged dataset in RDS format:
 
 ```bash
 data/merged_data.rds
-
+```
 
 ### Expected Columns
 - **Genes**: `Gene_Name`, `Gene ID`, `OMIM Gene`, `Gene Effect`, `Variants`
@@ -42,6 +42,7 @@ install.packages(c(
   "visNetwork", "DT", "memoise", "shinycssloaders",
   "RColorBrewer", "viridis", "future", "promises"
 ))
+```
 ---
 
 ## Install R dependencies
