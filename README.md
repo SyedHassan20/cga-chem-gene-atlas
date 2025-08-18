@@ -32,7 +32,7 @@ data/merged_data.rds
 - **Evidence**: `CTD PubMed IDs`, `Intolerome PubMed IDs`
 
 ---
-## Install R dependencies
+## Prepare Data
 
 ```bash
 install.packages(c(
