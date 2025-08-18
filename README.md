@@ -15,8 +15,6 @@ The **Chemical-Gene Atlas (CGA)** is an interactive Shiny web application for ex
 - **Gene–Chemical Network Visualization** with searchable and highlightable nodes.
 - **Data Table** with global and column-level search, PubMed/OMIM/CTD hyperlinks, and export to CSV.
 - **Reset & Zoom Options** for flexible exploration.
-- **Institutional Branding** with linked partner logos (UCSF, Imperial, Stanford, HOPE, NIH).
-
 ---
 
 ## Data Input
