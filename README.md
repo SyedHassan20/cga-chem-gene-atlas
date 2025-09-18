@@ -1,4 +1,4 @@
-# GeneChem-Atlas
+# Chemical-Gene Atlas
 Webapp for Gene-Chemical Interactions
 
 The **Chemical-Gene Atlas (CGA)** is an interactive Shiny web application for exploring how genes and chemicals interact in shaping prenatal and postnatal disease outcomes. It provides visual insights into gene effects, affected systems, lethality modes, and developmental timing, along with a searchable network and data table.
