@@ -48,3 +48,7 @@ install.packages(c(
 ## Install R dependencies
 - Place your merged_data.rds file into the data/ directory.
 
+---
+
+## License
+MIT License – See [LICENSE](LICENSE) for more information.
