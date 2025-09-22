@@ -51,4 +51,4 @@ install.packages(c(
 ---
 
 ## License
-MIT License – See [LICENSE](LICENSE) for more information.
+MIT License – See [LICENSE](https://github.com/SyedHassan20/cga-chem-gene-atlas/blob/main/LICENSE) for more information.
