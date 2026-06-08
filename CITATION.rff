@@ -1,0 +1,72 @@
+cff-version: 1.2.0
+
+title: "Chemical-Gene Atlas"
+
+message: "If you use this dataset, software, or resource, please cite it using the metadata below."
+
+type: software
+
+authors:
+
+* family-names: Bukhari
+  given-names: Syed Hassan
+
+* family-names: Nagasuri
+  given-names: Amrita
+
+* family-names: Oskotsky
+  given-names: Boris
+
+* family-names: Arnaout
+  given-names: Leen
+
+* family-names: Minkovski
+  given-names: Polina
+
+* family-names: Correia
+  given-names: Gonçalo D. S.
+
+* family-names: MacIntyre
+  given-names: David A.
+
+* family-names: Shaw
+  given-names: Gary M.
+
+* family-names: Stevenson
+  given-names: David K.
+
+* family-names: Lathi
+  given-names: Ruth B.
+
+* family-names: Yatsenko
+  given-names: Svetlana A.
+
+* family-names: Oskotsky
+  given-names: Tomiko T.
+
+* family-names: Rajkovic
+  given-names: Aleksandar
+
+* family-names: Sirota
+  given-names: Marina
+
+repository-code: "https://github.com/SyedHassan20/cga-chem-gene-atlas"
+
+url: "https://cgatlas.org"
+
+license: MIT
+
+keywords:
+
+* developmental lethality
+* pregnancy loss
+* recurrent pregnancy loss
+* toxicogenomics
+* exposomics
+* chemical-gene interactions
+* environmental health
+* reproductive health
+
+version: "1.0.0"
+
+date-released: 2026-06-08
